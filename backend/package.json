@@ -1,0 +1,26 @@
+{
+  "name": "aethel-backend",
+  "version": "1.0.0",
+  "description": "Aethel — Centralized Personal Media Collection & Review Tracker (API)",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "db:init": "node scripts/initDb.js",
+    "db:seed": "node scripts/seed.js",
+    "db:fix-posters": "node scripts/fix-posters.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
+    "otpauth": "^9.5.1",
+    "pg": "^8.13.0",
+    "qrcode": "^1.5.4",
+    "resend": "^6.25.0"
+  }
+}
