@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { api } from '../api/client';
 import { filterCollection } from '../utils/collection';
 
@@ -123,6 +123,10 @@ function InlineRating({ item, onUpdated, onError }) {
 
 // ── Main RecentFeed ───────────────────────────────────────────
 export default function RecentFeed({ items, loading, onDelete, onUpdated }) {
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!loading && /^#movie-\d+$/.test(hash)) document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'center' });
+  }, [hash, loading]);
   const [search, setSearch]   = useState('');
   const [status, setStatus] = useState('');
   const [genre, setGenre] = useState('');
@@ -215,7 +219,7 @@ export default function RecentFeed({ items, loading, onDelete, onUpdated }) {
       ) : (
         <div className="space-y-1">
           {filtered.map((item) => (
-            <div key={item.item_id}>
+            <div key={item.item_id} id={`movie-${item.item_id}`} className="collection-movie">
               <div className="flex flex-wrap items-center gap-3 p-3 rounded-xl transition-colors group"
                 onMouseEnter={e => e.currentTarget.style.background = '#181A20'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>

@@ -5,6 +5,9 @@
 export function errorHandler(err, req, res, _next) {
   console.error(`[ERROR] ${req.method} ${req.originalUrl}:`, err.message);
 
+  if (err.type === 'entity.too.large') return res.status(413).json({ message: 'Backup files must be smaller than 5 MB.' });
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ message: 'The submitted JSON is invalid.' });
+
   if (err.type === 'validation') {
     return res.status(400).json({
       error: 'Validation Error',

@@ -54,6 +54,8 @@ export const api = {
 
   // Media items
   getAll: () => request('/media'),
+  exportCollection: () => request('/media/export'),
+  importCollection: (backup) => request('/media/import', { method: 'POST', body: JSON.stringify(backup) }),
   getById: (id) => request(`/media/${id}`),
   getLatest: () => request('/media/latest'),
   getStats: () => request('/media/stats'),
@@ -109,4 +111,3 @@ export const api = {
   getPopular:    () => request('/movies/popular'),
   getTrending:   () => request('/movies/trending'),
 };
-

@@ -3,14 +3,8 @@
 -- 3NF Schema with Auth, Social Feed, and Admin Support
 -- ============================================================
 
-DROP TABLE IF EXISTS comments CASCADE;
-DROP TABLE IF EXISTS loves CASCADE;
-DROP TABLE IF EXISTS posts CASCADE;
-DROP TABLE IF EXISTS media_item_genres CASCADE;
-DROP TABLE IF EXISTS media_items CASCADE;
-DROP TABLE IF EXISTS genres CASCADE;
-DROP TABLE IF EXISTS item_types CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
+-- Fresh databases only. Existing databases must use the versioned migrations.
+-- This file intentionally contains no destructive reset statements.
 
 -- ============================================================
 -- 0. users
@@ -81,6 +75,8 @@ CREATE TABLE media_items (
 CREATE INDEX idx_media_items_date_logged ON media_items (date_logged DESC);
 CREATE INDEX idx_media_items_backlog ON media_items (completion_status, date_logged ASC);
 CREATE INDEX idx_media_items_user ON media_items (user_id);
+CREATE UNIQUE INDEX media_items_user_tmdb_unique ON media_items (user_id, tmdb_id) WHERE tmdb_id IS NOT NULL;
+CREATE UNIQUE INDEX media_items_user_title_year_unique ON media_items (user_id, lower(btrim(title)), release_year);
 
 -- ============================================================
 -- 4. media_item_genres (junction)

@@ -24,8 +24,12 @@ async function initDatabase() {
   const client = await pool.connect();
 
   try {
+    const existing = await client.query("SELECT tablename FROM pg_tables WHERE schemaname = 'public' LIMIT 1");
+    if (existing.rows.length) throw new Error('Database is not empty. Use npm run db:migrate to upgrade without deleting data.');
+    await client.query('BEGIN');
     console.log('📦 Running DDL initialization script...');
     await client.query(sql);
+    await client.query('COMMIT');
     console.log('✅ Database initialized successfully.');
 
     // Verify tables
@@ -37,8 +41,9 @@ async function initDatabase() {
     `);
     console.log('📋 Tables created:', res.rows.map(r => r.table_name).join(', '));
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('❌ Database initialization failed:', err.message);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
     client.release();
     await pool.end();

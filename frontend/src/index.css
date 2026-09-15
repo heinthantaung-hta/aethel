@@ -54,6 +54,36 @@ body {
 
 #root { min-height: 100vh; position: relative; }
 
+.collection-heading {
+  padding: 1.5rem 0 0.75rem;
+}
+.collection-vault {
+  padding: 1.5rem;
+  border: 1px solid #343943;
+  border-radius: 18px;
+  background: linear-gradient(120deg, #202630, #191c23 70%);
+}
+.vault-icon {
+  display: flex;
+  padding: 0.65rem;
+  border-radius: 12px;
+  color: #e5c77f;
+  background: rgba(229, 199, 127, 0.08);
+  border: 1px solid rgba(229, 199, 127, 0.18);
+}
+.restore-preview { padding: 1.25rem; border-radius: 12px; background: #11151c; border: 1px solid #343943; }
+.collection-movie { scroll-margin-top: 5rem; border-radius: 12px; }
+.collection-movie:target { outline: 2px solid #e5c77f; background: rgba(229, 199, 127, 0.06); }
+button:focus-visible, a:focus-visible { outline: 2px solid #e5c77f; outline-offset: 4px; }
+.btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+@media (max-width: 640px) {
+  .collection-vault { padding: 1rem; }
+  .collection-heading { padding-top: 0.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
 /* ── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg-2); }

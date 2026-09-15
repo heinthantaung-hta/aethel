@@ -1,18 +1,15 @@
-# Dependencies and build output
 node_modules/
 dist/
 dist-ssr/
 coverage/
-
-# Local credentials and user data
 .env
 .env.*
 !.env.example
 uploads/
+backups/
+*.dump
 *.pem
 *.key
-
-# Local tools, logs, and operating system files
 .agents/
 .codex/
 .DS_Store

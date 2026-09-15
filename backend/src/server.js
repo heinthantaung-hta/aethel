@@ -23,6 +23,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   credentials: true,
 }));
+app.use('/api/media/import', express.json({ limit: '5mb' }));
 app.use(express.json());
 
 // ── Static file serving (avatar uploads) ─────────────────────

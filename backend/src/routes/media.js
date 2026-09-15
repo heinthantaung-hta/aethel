@@ -2,8 +2,11 @@ import { Router } from 'express';
 import pool from '../config/db.js';
 import { validateMediaItem, validateStatusUpdate, validateRatingUpdate } from '../middleware/validate.js';
 import { requireUser } from '../middleware/adminMiddleware.js';
+import collectionTransfer from './collectionTransfer.js';
+import { lockCollection, findDuplicate } from '../utils/collectionBackup.js';
 
 const router = Router();
+router.use(collectionTransfer);
 
 // ──────────────────────────────────────────────────────────────
 // Helper: Build a media item query with aggregated genres
@@ -179,8 +182,9 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/media — Create a new movie entry (transactional)
 // ──────────────────────────────────────────────────────────────
 router.post('/', requireUser, validateMediaItem, async (req, res, next) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const {
       title, release_year, rating, completion_status,
       genre_ids, poster_url = '', overview = '', tmdb_id = null
@@ -195,6 +199,12 @@ router.post('/', requireUser, validateMediaItem, async (req, res, next) => {
     if (!movieTypeId) throw new Error('Movie type not found in database.');
 
     await client.query('BEGIN');
+    await lockCollection(client, userId);
+    const duplicate = await findDuplicate(client, userId, req.body);
+    if (duplicate) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'This movie is already in your collection.', existing_item_id: duplicate.item_id });
+    }
 
     const { rows } = await client.query(
       `INSERT INTO media_items
@@ -222,10 +232,10 @@ router.post('/', requireUser, validateMediaItem, async (req, res, next) => {
     );
     res.status(201).json(created.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) await client.query('ROLLBACK').catch(() => {});
     next(err);
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
@@ -233,8 +243,9 @@ router.post('/', requireUser, validateMediaItem, async (req, res, next) => {
 // PUT /api/media/:id — Update a movie entry (transactional)
 // ──────────────────────────────────────────────────────────────
 router.put('/:id', requireUser, validateMediaItem, async (req, res, next) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { id } = req.params;
     const {
       title, release_year, rating, completion_status,
@@ -243,6 +254,12 @@ router.put('/:id', requireUser, validateMediaItem, async (req, res, next) => {
     const userId = req.user.user_id;
 
     await client.query('BEGIN');
+    await lockCollection(client, userId);
+    const duplicate = await findDuplicate(client, userId, req.body, id);
+    if (duplicate) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'This movie is already in your collection.', existing_item_id: duplicate.item_id });
+    }
 
     const { rowCount } = await client.query(
       `UPDATE media_items
@@ -277,10 +294,10 @@ router.put('/:id', requireUser, validateMediaItem, async (req, res, next) => {
     );
     res.json(updated.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) await client.query('ROLLBACK').catch(() => {});
     next(err);
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

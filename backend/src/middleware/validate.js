@@ -14,6 +14,8 @@ export function validateMediaItem(req, res, next) {
 
   if (!title || typeof title !== 'string' || title.trim().length === 0) {
     errors.push('title is required and must be a non-empty string.');
+  } else if (title.trim().length > 255) {
+    errors.push('title must be 255 characters or fewer.');
   }
 
   if (release_year === undefined || release_year === null) {
@@ -37,9 +39,14 @@ export function validateMediaItem(req, res, next) {
   if (genre_ids !== undefined) {
     if (!Array.isArray(genre_ids)) {
       errors.push('genre_ids must be an array of integers.');
-    } else if (genre_ids.some(id => !Number.isInteger(Number(id)))) {
+    } else if (genre_ids.some(id => !['number', 'string'].includes(typeof id) || !Number.isInteger(Number(id)) || Number(id) < 1)) {
       errors.push('All genre_ids must be valid integers.');
     }
+  }
+
+  if (req.body.tmdb_id != null && (!['number', 'string'].includes(typeof req.body.tmdb_id)
+    || !Number.isInteger(Number(req.body.tmdb_id)) || Number(req.body.tmdb_id) <= 0 || Number(req.body.tmdb_id) > 2147483647)) {
+    errors.push('tmdb_id must be a positive integer.');
   }
 
   if (errors.length > 0) {
@@ -53,7 +60,7 @@ export function validateMediaItem(req, res, next) {
   req.body.title = title.trim();
   req.body.release_year = Number(release_year);
   req.body.rating = completion_status === 'Completed' && !unrated ? Number(rating) : null;
-  req.body.genre_ids = genre_ids ? genre_ids.map(Number) : [];
+  req.body.genre_ids = genre_ids ? [...new Set(genre_ids.map(Number))] : [];
   if (req.body.poster_url && typeof req.body.poster_url !== 'string') req.body.poster_url = '';
   if (req.body.overview && typeof req.body.overview !== 'string') req.body.overview = '';
   if (req.body.tmdb_id) req.body.tmdb_id = Number(req.body.tmdb_id) || null;

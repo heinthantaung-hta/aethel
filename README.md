@@ -4,12 +4,18 @@ A movie collection and review app built with React, Vite, Express, and PostgreSQ
 Track your watchlist, rate completed movies, discover movies through TMDB, and
 share reviews in the community feed.
 
+The collection includes title/status/genre filters, sorting, duplicate protection,
+and JSON backup/restore with a preview before importing.
+
 ## Requirements
 
 - Node.js 22.12 or newer and npm.
 - Docker with Docker Compose for the included PostgreSQL database.
 - A TMDB API key for movie search and discovery.
 - Optional: a Resend API key for sending verification emails.
+- PostgreSQL client tools (`pg_dump` and `pg_restore`) for database backups and
+  migrations. Use a `pg_dump` version compatible with your database server
+  (PostgreSQL 16 for the included Docker database), and make sure it is on `PATH`.
 
 Docker runs the database only. Start the backend and frontend separately below.
 
@@ -78,21 +84,24 @@ npm run db:init
 cd ..
 ```
 
-**`db:init` drops and recreates tables. Do not run it against a database containing
-data you want to keep.**
+`db:init` refuses to run when the public schema contains tables. The initialization
+SQL creates a fresh schema and contains no destructive reset statements.
 
 ### Upgrading an existing database
 
-Skip `db:init`. To enable saving unrated movies, run:
+Skip `db:init`. Apply the versioned migrations instead:
 
 ```sh
 cd backend
-node scripts/allow-unrated.js
+npm run db:migrate
 cd ..
 ```
 
-This migration preserves existing records and ratings and can be run repeatedly.
-See [the upgrade notes](backend/UPGRADING.md).
+The runner creates a full database backup in `backend/backups/` before applying
+pending migrations. It records checksums and applies the batch in a transaction.
+If backup or migration fails, no migration changes are committed. Existing
+duplicates cause the uniqueness migration to stop; review them manually rather
+than deleting data automatically. See [the upgrade notes](backend/UPGRADING.md).
 
 ## 4. Run the app
 
@@ -128,8 +137,8 @@ Run these commands from the project root:
 # Frontend collection tests
 npm test --prefix frontend
 
-# Backend rating validation tests
-node --test backend/src/middleware/validate.test.js
+# Backend validation, import, and migration tests
+npm test --prefix backend
 
 # Frontend lint and production build
 npm run lint --prefix frontend
@@ -152,6 +161,27 @@ docker compose stop postgres
 
 The database data remains in Docker's `pgdata` volume. Start it again with
 `docker compose up -d postgres`; initialization is only needed for a fresh database.
+
+## Back up and restore your collection
+
+On **My Collection**, use **Download backup** to export your movies, watch status,
+ratings, genres, posters, and dates added. Account details, passwords, posts, and
+uploaded images are not included in this personal collection backup.
+
+Choose **Restore backup**, select an Aethel JSON file, review the preview, and
+click **Confirm restore**. Existing movies keep their ratings and status. Movies
+with the same TMDB ID or the same title (ignoring case and surrounding spaces)
+and release year are skipped. The result shows how many were added and skipped.
+Invalid files are rejected, and a failed import is rolled back completely.
+
+Each import accepts up to 1,000 movies and a file under 5 MB. Larger exports are
+split into downloadable parts; download all parts and restore each separately.
+Genres are matched by name. A backup containing genres absent from the target
+database is rejected with an explanation, without partially importing movies.
+
+For a **full database backup**, run `npm run db:backup` from `backend`. This uses
+the configured PostgreSQL connection and includes sensitive account data, so
+keep backup files private. See [UPGRADING.md](backend/UPGRADING.md) for recovery.
 
 ## Troubleshooting
 

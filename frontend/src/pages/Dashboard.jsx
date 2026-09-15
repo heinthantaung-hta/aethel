@@ -4,6 +4,7 @@ import { api } from '../api/client';
 import KpiCards from '../components/KpiCards';
 import RecentFeed from '../components/RecentFeed';
 import { collectionStats } from '../utils/collection';
+import CollectionBackup from '../components/CollectionBackup';
 
 export default function Dashboard() {
   const [latest, setLatest] = useState([]);
@@ -38,12 +39,13 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       {/* Header row with Add Movie button */}
-      <div className="flex items-center justify-between">
+      <div className="collection-heading flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white">My Collection</h1>
-          <p className="text-sm mt-0.5" style={{ color: '#A0A4AE' }}>Your personal movie library</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-red-400 mb-2">The personal archive</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">My Collection</h1>
+          <p className="text-sm mt-2 text-gray-400">Every movie you love. Every story still to discover.</p>
         </div>
         <Link to="/add" className="btn-primary">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -54,6 +56,7 @@ export default function Dashboard() {
       </div>
 
       <KpiCards stats={collectionStats(latest)} loading={loading} />
+      <CollectionBackup onRestored={fetchData} disabled={loading} />
       <RecentFeed items={latest} loading={loading} onDelete={handleDelete} onUpdated={handleUpdated} />
     </div>
   );

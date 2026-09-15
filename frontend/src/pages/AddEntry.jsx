@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import StarRating from '../components/StarRating';
 import GenreCheckboxes from '../components/GenreCheckboxes';
@@ -24,6 +25,7 @@ export default function AddEntry() {
   const [success, setSuccess]         = useState(null);
   const [error, setError]             = useState(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [duplicateId, setDuplicateId] = useState(null);
 
   useEffect(() => {
     api.getGenres()
@@ -36,9 +38,11 @@ export default function AddEntry() {
       ...(field === 'completion_status' && value !== 'Completed' ? { rating: 0 } : {}),
     }));
     setError(null); setSuccess(null);
+    setDuplicateId(null);
   };
 
   const handleMovieSelect = (movie) => {
+    setDuplicateId(null);
     if (!movie) {
       setSelectedMovie(null);
       setForm((f) => ({ ...f, title: '', release_year: '', poster_url: '', overview: '', tmdb_id: null }));
@@ -65,6 +69,7 @@ export default function AddEntry() {
       setForm(initialForm); setSelectedMovie(null);
     } catch (err) {
       setError(err.data?.message || err.message);
+      if (err.status === 409) setDuplicateId(err.data?.existing_item_id || '');
     } finally { setLoading(false); }
   };
 
@@ -78,7 +83,7 @@ export default function AddEntry() {
 
       {/* Success */}
       {success && (
-        <div className="px-5 py-3.5 rounded-2xl animate-scale-in flex items-center gap-3"
+        <div role="status" className="px-5 py-3.5 rounded-2xl animate-scale-in flex items-center gap-3"
           style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)' }}>
           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="#10b981" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -89,12 +94,13 @@ export default function AddEntry() {
 
       {/* Error */}
       {error && (
-        <div className="px-5 py-3.5 rounded-2xl animate-scale-in flex items-center gap-3"
+        <div role="alert" className="px-5 py-3.5 rounded-2xl animate-scale-in flex flex-wrap items-center gap-3"
           style={{ background: 'rgba(229,9,20,0.1)', border: '1px solid rgba(229,9,20,0.25)' }}>
           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="#E50914" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
           <p className="text-sm font-medium" style={{ color: '#E50914' }}>{error}</p>
+          {duplicateId !== null && <Link className="text-sm text-white underline underline-offset-4" to={`/collection${duplicateId ? `#movie-${duplicateId}` : ''}`}>View in collection →</Link>}
         </div>
       )}
 
