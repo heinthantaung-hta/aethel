@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
@@ -50,20 +50,21 @@ export default function AdminPanel() {
   const [loading, setLoading]     = useState(true);
   const [confirmBan, setConfirmBan] = useState(null);
 
-  if (user?.role !== 'admin') return <Navigate to="/feed" replace />;
-
-  useEffect(() => {
-    if (tab === 'posts') loadPosts(); else loadUsers();
-  }, [tab, statusFilter]);
-
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     try { setLoading(true); setPosts(await api.adminGetPosts(statusFilter || undefined)); }
     catch {} finally { setLoading(false); }
-  };
-  const loadUsers = async () => {
+  }, [statusFilter]);
+  const loadUsers = useCallback(async () => {
     try { setLoading(true); setUsers(await api.adminGetUsers()); }
     catch {} finally { setLoading(false); }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user?.role !== 'admin') return;
+    if (tab === 'posts') loadPosts(); else loadUsers();
+  }, [user?.role, tab, loadPosts, loadUsers]);
+
+  if (user?.role !== 'admin') return <Navigate to="/feed" replace />;
 
   const handlePostStatus = async (postId, status) => {
     await api.adminUpdatePostStatus(postId, status);

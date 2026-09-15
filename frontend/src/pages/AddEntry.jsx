@@ -32,7 +32,9 @@ export default function AddEntry() {
   }, []);
 
   const handleChange = (field, value) => {
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm((f) => ({ ...f, [field]: value,
+      ...(field === 'completion_status' && value !== 'Completed' ? { rating: 0 } : {}),
+    }));
     setError(null); setSuccess(null);
   };
 
@@ -56,7 +58,9 @@ export default function AddEntry() {
       return setError('Enter a valid release year (1800–2100).');
     try {
       setLoading(true);
-      const created = await api.create({ ...form, release_year: Number(form.release_year) });
+      const created = await api.create({ ...form, release_year: Number(form.release_year),
+        rating: form.completion_status === 'Completed' && form.rating > 0 ? form.rating : null,
+      });
       setSuccess(`"${created.title}" added to your collection!`);
       setForm(initialForm); setSelectedMovie(null);
     } catch (err) {
@@ -178,14 +182,16 @@ export default function AddEntry() {
           </div>
         </div>
 
-        {/* Rating */}
-        <div>
+        {/* Unwatched movies can be saved without inventing a rating. */}
+        {form.completion_status === 'Completed' ? <div>
           <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#A0A4AE' }}>
-            Your Rating
+            Your Rating (optional)
           </label>
           <StarRating value={form.rating} onChange={(val) => handleChange('rating', val)} />
-          <p className="text-[11px] mt-1.5" style={{ color: '#5a5f6e' }}>How would you rate this movie?</p>
-        </div>
+          {form.rating > 0 && <button type="button" className="btn-secondary mt-2"
+            onClick={() => handleChange('rating', 0)}>Clear rating</button>}
+          <p className="text-xs mt-1.5 text-gray-400">Rate now, or leave unrated and decide later in your collection.</p>
+        </div> : <p className="text-sm text-gray-400">Save this movie now. You can rate it after marking it completed.</p>}
 
         {/* Genres */}
         <div>

@@ -1,5 +1,10 @@
 const VALID_STATUSES = ['Want to Watch', 'Watching', 'Completed'];
 
+function isRating(value) {
+  return (typeof value === 'number' || (typeof value === 'string' && value.trim() !== ''))
+    && Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 5;
+}
+
 /**
  * Validates the request body for creating or updating a media item (movies-only).
  */
@@ -20,13 +25,9 @@ export function validateMediaItem(req, res, next) {
     }
   }
 
-  if (rating === undefined || rating === null) {
-    errors.push('rating is required.');
-  } else {
-    const r = Number(rating);
-    if (!Number.isInteger(r) || r < 1 || r > 5) {
-      errors.push('rating must be an integer between 1 and 5.');
-    }
+  const unrated = rating === undefined || rating === null || rating === '' || rating === 0 || rating === '0';
+  if (!unrated && !isRating(rating)) {
+    errors.push('rating must be an integer between 1 and 5, or left empty.');
   }
 
   if (!completion_status || !VALID_STATUSES.includes(completion_status)) {
@@ -51,12 +52,23 @@ export function validateMediaItem(req, res, next) {
   // Normalize types
   req.body.title = title.trim();
   req.body.release_year = Number(release_year);
-  req.body.rating = Number(rating);
+  req.body.rating = completion_status === 'Completed' && !unrated ? Number(rating) : null;
   req.body.genre_ids = genre_ids ? genre_ids.map(Number) : [];
   if (req.body.poster_url && typeof req.body.poster_url !== 'string') req.body.poster_url = '';
   if (req.body.overview && typeof req.body.overview !== 'string') req.body.overview = '';
   if (req.body.tmdb_id) req.body.tmdb_id = Number(req.body.tmdb_id) || null;
 
+  next();
+}
+
+/** Rating edits accept whole stars only, unlike creation which permits unrated movies. */
+export function validateRatingUpdate(req, res, next) {
+  if (!isRating(req.body.rating)) {
+    const err = new Error('Rating must be a whole number from 1 to 5.');
+    err.type = 'validation';
+    return next(err);
+  }
+  req.body.rating = Number(req.body.rating);
   next();
 }
 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import pool from '../config/db.js';
-import { validateMediaItem, validateStatusUpdate } from '../middleware/validate.js';
+import { validateMediaItem, validateStatusUpdate, validateRatingUpdate } from '../middleware/validate.js';
 import { requireUser } from '../middleware/adminMiddleware.js';
 
 const router = Router();
@@ -316,13 +316,10 @@ router.patch('/:id/status', requireUser, validateStatusUpdate, async (req, res, 
 // ──────────────────────────────────────────────────────────────
 // PATCH /api/media/:id/rating — Update rating only (Completed items)
 // ──────────────────────────────────────────────────────────────
-router.patch('/:id/rating', requireUser, async (req, res, next) => {
+router.patch('/:id/rating', requireUser, validateRatingUpdate, async (req, res, next) => {
   try {
     const { id } = req.params;
     const { rating } = req.body;
-    if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ message: 'Rating must be 1–5.' });
-    }
     const { rows, rowCount } = await pool.query(
       `UPDATE media_items SET rating = $1
        WHERE item_id = $2 AND user_id = $3 AND completion_status = 'Completed'

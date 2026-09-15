@@ -66,7 +66,7 @@ CREATE TABLE media_items (
     item_id           SERIAL PRIMARY KEY,
     title             VARCHAR(255) NOT NULL,
     release_year      INT NOT NULL,
-    rating            INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    rating            INT CHECK (rating >= 1 AND rating <= 5),
     completion_status VARCHAR(20) NOT NULL CHECK (
         completion_status IN ('Want to Watch', 'Watching', 'Completed')
     ),

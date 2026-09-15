@@ -147,7 +147,6 @@ export default function MovieSearch({ onSelect, initialValue = '' }) {
                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors cursor-pointer ${
                     highlighted === idx ? 'bg-[#181A20]' : ''
                   }`}
-                  onMouseEnter={() => setHighlighted(idx)}
                   style={{ background: highlighted === idx ? '#181A20' : 'transparent' }}
                 >
                   {/* Poster thumbnail */}
