@@ -120,7 +120,14 @@ export default function AdminPanel() {
           ? <AdminReportCard key={`report-${item.report_id}`} report={item} busy={disabled} runAction={runAction} confirmAction={setConfirmation} />
           : tab === 'posts' ? <article key={`post-${item.post_id}`} className="card p-5 space-y-3">
             <div className="flex flex-wrap items-center gap-2"><Badge value={item.status} /><span className="text-xs text-gray-400">@{item.username} · <TimeAgo date={item.created_at} /></span></div>
-            <h3 className="font-semibold break-words">{item.title}</h3>
+            <div className="flex items-start gap-4">
+              {item.poster_url && <img src={item.poster_url} alt={`${item.media_title || item.title} poster`} loading="lazy"
+                className="w-16 h-24 rounded-lg object-cover shrink-0 bg-[#181A20] text-xs text-gray-400" />}
+              <div className="min-w-0">
+                <h3 className="font-semibold break-words">{item.title}</h3>
+                <p className="text-sm text-gray-400 mt-1">{item.media_title}</p>
+              </div>
+            </div>
             <AdminBanControl target={{ user_id: item.user_id, username: item.username, role: item.author_role, is_banned: item.author_is_banned }} onChanged={load} />
             <p className="text-xs text-gray-400">{item.media_title} · {item.love_count} likes · {item.comment_count} comments</p>
             <details className="text-sm"><summary className="cursor-pointer text-gray-300">Read full post</summary><p className="mt-3 text-gray-300 whitespace-pre-wrap break-words">{item.body || 'No text content.'}</p></details>
