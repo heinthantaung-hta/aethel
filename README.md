@@ -183,6 +183,29 @@ For a **full database backup**, run `npm run db:backup` from `backend`. This use
 the configured PostgreSQL connection and includes sensitive account data, so
 keep backup files private. See [UPGRADING.md](backend/UPGRADING.md) for recovery.
 
+## Admin moderation
+
+Admin accounts open `/admin` to see global user, published-post, flagged-post,
+and pending-report counts. Click a count to jump to its corresponding list.
+The Reports inbox starts with pending reports and includes reported content,
+the reporter's explanation, and an admin note of up to 2,000 characters.
+Mark a report reviewed, resolve it, or dismiss it. Closing a report does not
+automatically remove content or ban a user; those are separate explicit actions.
+Closed reports retain the resolving administrator and time and cannot be
+overwritten by a second administrator's stale decision.
+
+Posts can be previewed, flagged, removed from the feed, restored, or permanently
+deleted. Users can be searched by username, display name, or email and filtered
+by ban status. Bans block protected API requests even for existing sessions;
+administrator accounts cannot be banned. Permanent deletion and bans require
+confirmation, and failed actions show an error instead of silently disappearing.
+
+Search and 12-item pagination run in the browser over the existing admin list
+endpoints. For large communities, server-side pagination is a future improvement.
+This update does not add a general moderation activity log; report decisions
+use the existing report history fields. Run `npm test` in both `frontend` and
+`backend`, and `npm run build` and `npm run lint` in `frontend` to verify changes.
+
 ## Troubleshooting
 
 - **Database connection refused:** check that Docker is running, PostgreSQL is

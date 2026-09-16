@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import pool from '../config/db.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'aethel_dev_secret_key_change_in_production';
 
@@ -6,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'aethel_dev_secret_key_change_in_pr
  * JWT authentication middleware.
  * Verifies the Bearer token and attaches user data to req.user.
  */
-export function authenticate(req, res, next) {
+export async function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -25,7 +26,6 @@ export function authenticate(req, res, next) {
       email: decoded.email,
       username: decoded.username,
     };
-    next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({
@@ -38,6 +38,18 @@ export function authenticate(req, res, next) {
       message: 'Invalid authentication token.',
     });
   }
+
+  try {
+    // Older databases gain is_banned when admin users are first loaded.
+    // Reading it through JSON also supports those databases before that upgrade.
+    const { rows } = await pool.query(
+      `SELECT COALESCE((to_jsonb(u)->>'is_banned')::boolean, FALSE) AS is_banned
+       FROM users u WHERE user_id = $1`, [req.user.user_id]
+    );
+    if (!rows.length) return res.status(401).json({ message: 'Account no longer exists.' });
+    if (rows[0].is_banned) return res.status(403).json({ message: 'Your account has been banned. Contact an administrator.' });
+    next();
+  } catch (error) { next(error); }
 }
 
 export { JWT_SECRET };

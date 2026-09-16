@@ -19,9 +19,8 @@ async function request(endpoint, options = {}, customToken = null) {
     if (response.status === 401 && !endpoint.startsWith('/auth/')) {
       localStorage.removeItem('aethel_token');
       window.location.href = '/login';
-      return;
     }
-    const error = new Error(data.message || 'An error occurred');
+    const error = new Error(data.message || data.error || 'An error occurred');
     error.status = response.status;
     error.data = data;
     throw error;

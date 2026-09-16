@@ -150,12 +150,15 @@ router.patch('/users/:id/ban', async (req, res, next) => {
     if (typeof banned !== 'boolean') {
       return res.status(400).json({ error: 'Validation Error', message: '`banned` must be a boolean.' });
     }
+    if (banned && Number(req.params.id) === req.user.user_id) {
+      return res.status(400).json({ message: 'You cannot ban your own account.' });
+    }
     const { rows, rowCount } = await pool.query(
-      `UPDATE users SET is_banned = $1 WHERE user_id = $2
+      `UPDATE users SET is_banned = $1 WHERE user_id = $2 AND (role <> 'admin' OR $1 = FALSE)
        RETURNING user_id, email, username, display_name, role, is_banned`,
       [banned, req.params.id]
     );
-    if (rowCount === 0) return res.status(404).json({ error: 'Not Found', message: 'User not found.' });
+    if (rowCount === 0) return res.status(404).json({ error: 'Not Found', message: 'User not found or administrator accounts cannot be banned.' });
     res.json(rows[0]);
   } catch (err) {
     next(err);
@@ -185,7 +188,7 @@ router.get('/reports', async (req, res, next) => {
             SELECT json_build_object(
               'user_id', tu.user_id, 'username', tu.username,
               'display_name', tu.display_name, 'avatar_url', tu.avatar_url,
-              'is_banned', tu.is_banned
+              'is_banned', COALESCE((to_jsonb(tu)->>'is_banned')::boolean, FALSE), 'role', tu.role
             ) FROM users tu WHERE tu.user_id = r.target_id
           )
           WHEN r.report_type = 'comment' THEN (
@@ -223,14 +226,17 @@ router.patch('/reports/:id', async (req, res, next) => {
     if (!['reviewed', 'resolved', 'dismissed'].includes(status)) {
       return res.status(400).json({ error: 'Status must be reviewed, resolved, or dismissed.' });
     }
+    if (admin_note !== undefined && (typeof admin_note !== 'string' || admin_note.length > 2000)) {
+      return res.status(400).json({ message: 'Admin note must be text of at most 2,000 characters.' });
+    }
     const { rows, rowCount } = await pool.query(
       `UPDATE reports SET status = $1, admin_note = COALESCE($2, admin_note),
        resolved_at = CASE WHEN $1 IN ('resolved','dismissed') THEN CURRENT_TIMESTAMP ELSE resolved_at END,
        resolved_by = CASE WHEN $1 IN ('resolved','dismissed') THEN $3 ELSE resolved_by END
-       WHERE report_id = $4 RETURNING *`,
-      [status, admin_note || '', req.user.user_id, req.params.id]
+       WHERE report_id = $4 AND status IN ('pending', 'reviewed') RETURNING *`,
+      [status, admin_note ?? null, req.user.user_id, req.params.id]
     );
-    if (rowCount === 0) return res.status(404).json({ error: 'Report not found.' });
+    if (rowCount === 0) return res.status(409).json({ message: 'Report is no longer open or was deleted. Refresh to see the latest status.' });
     res.json(rows[0]);
   } catch (err) {
     next(err);

@@ -10,7 +10,7 @@
     "db:init": "node scripts/initDb.js",
     "db:migrate": "node scripts/migrate.js",
     "db:backup": "node scripts/backup.js",
-    "test": "node --test src/middleware/*.test.js src/utils/*.test.js",
+    "test": "node --test src/middleware/*.test.js src/utils/*.test.js src/routes/*.test.js",
     "db:seed": "node scripts/seed.js",
     "db:fix-posters": "node scripts/fix-posters.js"
   },
