@@ -30,6 +30,8 @@ Included migrations:
 - `001_allow_unrated.sql`: permits empty ratings, preserving existing ratings.
 - `002_unique_movies.sql`: prevents duplicate movies per user by TMDB ID or
   case-insensitive, trimmed title plus release year.
+- `003_report_resolver.sql`: adds the missing report resolver reference on older
+  databases. Existing reports are retained; historical decisions stay unattributed.
 
 If existing duplicates prevent migration, the entire batch rolls back and all
 records remain. Review duplicates in the affected collection, decide which entry
