@@ -16,6 +16,7 @@ router.get('/', async (req, res, next) => {
         p.poster_url, p.release_year, p.tmdb_id, p.rating,
         p.status, p.created_at,
         u.user_id, u.username, u.display_name, u.avatar_url,
+        u.role AS author_role, COALESCE((to_jsonb(u)->>'is_banned')::boolean, FALSE) AS author_is_banned,
         COUNT(DISTINCT l.user_id)::int AS love_count,
         COUNT(DISTINCT c.comment_id)::int AS comment_count,
         BOOL_OR(l.user_id = $1) AS loved_by_me
@@ -46,6 +47,7 @@ router.get('/:id', async (req, res, next) => {
         p.poster_url, p.release_year, p.tmdb_id, p.rating,
         p.status, p.created_at,
         u.user_id, u.username, u.display_name, u.avatar_url,
+        u.role AS author_role, COALESCE((to_jsonb(u)->>'is_banned')::boolean, FALSE) AS author_is_banned,
         COUNT(DISTINCT l.user_id)::int AS love_count,
         COUNT(DISTINCT c.comment_id)::int AS comment_count,
         BOOL_OR(l.user_id = $2) AS loved_by_me

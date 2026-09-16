@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import TimeAgo from '../components/TimeAgo';
 import { Badge, AdminAction as Action, AdminConfirmation } from '../components/AdminControls';
 import AdminReportCard from '../components/AdminReportCard';
+import AdminBanControl from '../components/AdminBanControl';
 import { adminStats, filterAdminItems, paginate } from '../utils/admin';
 
 const FILTERS = { reports: ['pending', 'reviewed', 'resolved', 'dismissed'], posts: ['published', 'flagged', 'removed'], users: ['active', 'banned'] };
@@ -120,6 +121,7 @@ export default function AdminPanel() {
           : tab === 'posts' ? <article key={`post-${item.post_id}`} className="card p-5 space-y-3">
             <div className="flex flex-wrap items-center gap-2"><Badge value={item.status} /><span className="text-xs text-gray-400">@{item.username} · <TimeAgo date={item.created_at} /></span></div>
             <h3 className="font-semibold break-words">{item.title}</h3>
+            <AdminBanControl target={{ user_id: item.user_id, username: item.username, role: item.author_role, is_banned: item.author_is_banned }} onChanged={load} />
             <p className="text-xs text-gray-400">{item.media_title} · {item.love_count} likes · {item.comment_count} comments</p>
             <details className="text-sm"><summary className="cursor-pointer text-gray-300">Read full post</summary><p className="mt-3 text-gray-300 whitespace-pre-wrap break-words">{item.body || 'No text content.'}</p></details>
             <div className="flex flex-wrap gap-2">

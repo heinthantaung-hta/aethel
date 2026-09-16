@@ -194,6 +194,11 @@ automatically remove content or ban a user; those are separate explicit actions.
 Closed reports retain the resolving administrator and time and cannot be
 overwritten by a second administrator's stale decision.
 
+Admins can ban or unban directly from user profiles, feed posts, post details,
+and the admin Posts and Users lists without waiting for a report. Report review
+also supports banning the author of a reported post or comment, as well as a
+reported user. Ban controls are hidden for ordinary users, self, and other admins.
+
 Posts can be previewed, flagged, removed from the feed, restored, or permanently
 deleted. Users can be searched by username, display name, or email and filtered
 by ban status. Bans block protected API requests even for existing sessions;

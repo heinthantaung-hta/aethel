@@ -15,6 +15,7 @@ router.get('/posts', async (req, res, next) => {
     const statusFilter = req.query.status;
     let query = `
       SELECT p.*, u.username, u.display_name, u.avatar_url,
+        u.role AS author_role, COALESCE((to_jsonb(u)->>'is_banned')::boolean, FALSE) AS author_is_banned,
         COUNT(DISTINCT l.user_id)::int AS love_count,
         COUNT(DISTINCT c.comment_id)::int AS comment_count
       FROM posts p
@@ -181,7 +182,9 @@ router.get('/reports', async (req, res, next) => {
             SELECT json_build_object(
               'post_id', p.post_id, 'title', p.title, 'body', p.body,
               'media_title', p.media_title, 'status', p.status,
-              'username', pu.username, 'display_name', pu.display_name
+              'username', pu.username, 'display_name', pu.display_name,
+              'user_id', pu.user_id, 'role', pu.role,
+              'is_banned', COALESCE((to_jsonb(pu)->>'is_banned')::boolean, FALSE)
             ) FROM posts p JOIN users pu ON p.user_id = pu.user_id WHERE p.post_id = r.target_id
           )
           WHEN r.report_type = 'user' THEN (
@@ -194,7 +197,9 @@ router.get('/reports', async (req, res, next) => {
           WHEN r.report_type = 'comment' THEN (
             SELECT json_build_object(
               'comment_id', cm.comment_id, 'body', cm.body,
-              'username', cu.username, 'display_name', cu.display_name
+              'username', cu.username, 'display_name', cu.display_name,
+              'user_id', cu.user_id, 'role', cu.role,
+              'is_banned', COALESCE((to_jsonb(cu)->>'is_banned')::boolean, FALSE)
             ) FROM comments cm JOIN users cu ON cm.user_id = cu.user_id WHERE cm.comment_id = r.target_id
           )
         END AS target_details,

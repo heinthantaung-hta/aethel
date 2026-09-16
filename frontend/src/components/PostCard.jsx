@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import LoveButton from './LoveButton';
 import TimeAgo from './TimeAgo';
 import ReportModal from './ReportModal';
+import AdminBanControl from './AdminBanControl';
 
 function Stars({ rating }) {
   if (!rating) return null;
@@ -153,6 +154,7 @@ export default function PostCard({ post, onLoveToggle, onDeleted }) {
           </Link>
 
           {/* Row 4 — action bar */}
+          {isAdmin && <AdminBanControl key={post.user_id} target={{ user_id: post.user_id, username: post.username, role: post.author_role, is_banned: post.author_is_banned }} />}
           {!isAdmin && (
             <div className="flex items-center gap-0.5 pt-1 mt-0.5" style={{ borderTop: '1px solid #2C313A' }}>
               <LoveButton loved={post.loved_by_me} count={post.love_count} onToggle={() => onLoveToggle(post.post_id)} compact />

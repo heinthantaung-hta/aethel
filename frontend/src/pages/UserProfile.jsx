@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import TimeAgo from '../components/TimeAgo';
 import ReportModal from '../components/ReportModal';
 import SecuritySettings from '../components/SecuritySettings';
+import AdminBanControl from '../components/AdminBanControl';
 
 // ── Cinema dark theme status pills ─────────────────────────────
 const statusStyle = {
@@ -457,6 +458,7 @@ export default function UserProfile() {
                   <p className="text-sm font-medium" style={{ color: '#A0A4AE' }}>@{user.username}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
+                  <AdminBanControl key={user.user_id} target={user} />
                   {user.role === 'admin' && (
                     <span className="text-xs font-bold px-2.5 py-1 rounded-full"
                       style={{ background: 'rgba(229,9,20,0.15)', color: '#E50914', border: '1px solid rgba(229,9,20,0.3)' }}>

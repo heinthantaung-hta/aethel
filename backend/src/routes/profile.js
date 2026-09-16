@@ -179,7 +179,8 @@ router.get('/u/:username', async (req, res, next) => {
 
     // Get user info (public fields only)
     const { rows: userRows } = await pool.query(
-      `SELECT user_id, username, display_name, bio, avatar_url, role, created_at
+      `SELECT user_id, username, display_name, bio, avatar_url, role, created_at,
+         COALESCE((to_jsonb(users)->>'is_banned')::boolean, FALSE) AS is_banned
        FROM users WHERE username = $1`,
       [username]
     );

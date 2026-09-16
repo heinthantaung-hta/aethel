@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AdminBanControl from '../components/AdminBanControl';
 import { api } from '../api/client';
 import LoveButton from '../components/LoveButton';
 import TimeAgo from '../components/TimeAgo';
@@ -360,6 +361,7 @@ export default function PostDetail() {
             {/* Stars + interactions */}
             <div className="flex items-center gap-4 mt-2">
               {post.rating && <Stars rating={post.rating} />}
+              {isAdmin && <AdminBanControl key={post.user_id} target={{ user_id: post.user_id, username: post.username, role: post.author_role, is_banned: post.author_is_banned }} />}
               {!isAdmin ? (
                 <LoveButton loved={post.loved_by_me} count={post.love_count} onToggle={handleLoveToggle} compact />
               ) : (

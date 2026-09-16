@@ -1,3 +1,7 @@
+export function canModerateUser(actor, target) {
+  return actor?.role === 'admin' && target?.role === 'user' && Boolean(target.user_id) && actor.user_id !== target.user_id;
+}
+
 export function adminStats({ posts, users, reports }) {
   return {
     users: users.length,

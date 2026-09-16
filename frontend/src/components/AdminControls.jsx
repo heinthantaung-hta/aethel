@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useId } from 'react';
 
 export function Badge({ value }) {
   const colors = {
@@ -19,16 +19,18 @@ export function AdminAction({ children, onClick, danger = false, disabled = fals
 
 export function AdminConfirmation({ confirmation, busy, onCancel, onConfirm }) {
   const dialog = useRef(null);
+  const titleId = useId();
+  const descriptionId = useId();
   useEffect(() => {
     const previous = document.activeElement;
     dialog.current.showModal();
     return () => { previous?.focus(); };
   }, []);
   return <dialog ref={dialog} onCancel={event => { event.preventDefault(); if (!busy) onCancel(); }}
-    aria-labelledby="admin-confirm-title" aria-describedby="admin-confirm-description"
+    aria-labelledby={titleId} aria-describedby={descriptionId}
     className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-[#353944] bg-[#22252D] text-white p-6 backdrop:bg-black/70">
-    <h2 id="admin-confirm-title" className="text-lg font-semibold">{confirmation.title}</h2>
-    <p id="admin-confirm-description" className="text-sm text-gray-300 mt-3">{confirmation.detail}</p>
+    <h2 id={titleId} className="text-lg font-semibold">{confirmation.title}</h2>
+    <p id={descriptionId} className="text-sm text-gray-300 mt-3">{confirmation.detail}</p>
     <div className="flex justify-end gap-2 mt-6">
       <AdminAction disabled={busy} onClick={onCancel}>Cancel</AdminAction>
       <button className="btn-primary" disabled={busy} onClick={onConfirm}>{busy ? 'Saving…' : 'Confirm'}</button>

@@ -1,6 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adminStats, filterAdminItems, paginate } from './admin.js';
+import { adminStats, filterAdminItems, paginate, canModerateUser } from './admin.js';
+
+test('direct ban controls are limited to admins moderating another regular user', () => {
+  const admin = { user_id: 1, role: 'admin' };
+  assert.equal(canModerateUser(admin, { user_id: 2, role: 'user' }), true);
+  assert.equal(canModerateUser(admin, { user_id: 2, role: 'admin' }), false);
+  assert.equal(canModerateUser(admin, { user_id: 1, role: 'user' }), false);
+  assert.equal(canModerateUser({ user_id: 3, role: 'user' }, { user_id: 2, role: 'user' }), false);
+  assert.equal(canModerateUser(null, { user_id: 2, role: 'user' }), false);
+  assert.equal(canModerateUser(admin, { user_id: 2 }), false);
+});
 
 test('overview counts remain global when the visible posts are filtered', () => {
   const posts = [{ status: 'published', title: 'Arrival' }, { status: 'flagged', title: 'Dune' }];

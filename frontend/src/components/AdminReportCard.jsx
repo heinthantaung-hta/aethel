@@ -36,7 +36,7 @@ export default function AdminReportCard({ report, busy, runAction, confirmAction
             title: 'Delete reported comment?', detail: 'This permanently deletes the comment and its replies. This cannot be undone.',
             action: () => api.adminDeleteComment(target.comment_id), message: 'Comment deleted. You can now resolve the report.',
           })}>Delete comment</Action>}
-          {report.report_type === 'user' && target.role !== 'admin' && !target.is_banned && <Action disabled={busy} danger onClick={() => confirmAction({
+          {target.user_id && target.role === 'user' && !target.is_banned && <Action disabled={busy} danger onClick={() => confirmAction({
             title: `Ban @${target.username}?`, detail: 'This user will lose access until an administrator unbans them.',
             action: () => api.adminBanUser(target.user_id, true), message: 'User banned. You can now resolve the report.',
           })}>Ban user</Action>}
